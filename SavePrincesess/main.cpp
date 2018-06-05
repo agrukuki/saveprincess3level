@@ -1,13 +1,17 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <stdlib.h>
+#include <string>
 #include <SFML/System.hpp>
 #include "Player.h"
 #include "Princess.h"
 #include "Monster.h"
+#include <SFML/Audio.hpp>
 using namespace std;
 #define ROW 10
 #define COL 10
+
+
 char mapLevel0[ROW][COL] = {
 
 {'x','x','x','x','x','x','x','x','x','x'},
@@ -46,6 +50,48 @@ char mapLevel2[ROW][COL] = {
 { 'w','x','w','x','x','x','x','x','x','w' },
 { 'w','x','w','w','x','m','w','x','m','x' },
 { 'w','x','x','x','x','x','w','x','x','x' },
+{ 'w','x','x','x','w','m','x','x','x','x' },
+{ 'w','w','w','x','w','x','w','w','x','x' },
+
+};
+char mapLevel3[ROW][COL] = {
+
+{ 'x','x','w','w','w','w','w','w','w','w' },
+{ 'w','x','m','x','x','x','x','x','x','w' },
+{ 'w','x','m','x','w','w','w','x','x','w' },
+{ 'w','x','m','x','w','x','w','x','w','w' },
+{ 'w','x','x','x','w','x','x','x','x','w' },
+{ 'w','w','w','x','x','x','x','x','x','w' },
+{ 'w','x','w','w','x','m','w','x','m','x' },
+{ 'w','x','x','x','x','x','w','x','x','w' },
+{ 'w','x','x','x','w','m','x','x','x','x' },
+{ 'w','w','w','x','w','x','w','w','x','x' },
+
+};
+char mapLevel4[ROW][COL] = {
+
+{ 'x','w','w','w','w','w','w','w','w','w' },
+{ 'x','x','x','x','w','x','x','x','x','w' },
+{ 'w','x','w','x','x','x','w','x','x','w' },
+{ 'w','x','m','x','w','x','w','x','w','w' },
+{ 'w','x','x','x','w','x','w','x','x','w' },
+{ 'w','x','w','x','x','x','w','x','x','w' },
+{ 'w','x','w','w','w','m','w','x','m','x' },
+{ 'w','x','x','x','x','x','x','x','x','w' },
+{ 'w','x','x','x','w','m','x','x','x','x' },
+{ 'w','w','w','x','w','x','w','w','x','x' },
+
+};
+char mapLevel5[ROW][COL] = {
+
+{ 'x','x','w','w','w','w','w','w','w','w' },
+{ 'w','x','m','x','x','x','x','x','x','w' },
+{ 'w','x','m','x','w','w','w','x','x','w' },
+{ 'w','x','m','x','w','x','w','x','w','w' },
+{ 'w','x','x','x','w','x','x','x','x','w' },
+{ 'w','w','w','x','x','x','x','x','x','w' },
+{ 'w','x','w','w','x','m','w','x','m','x' },
+{ 'w','x','x','x','x','x','w','x','x','w' },
 { 'w','x','x','x','w','m','x','x','x','x' },
 { 'w','w','w','x','w','x','w','w','x','x' },
 
@@ -107,6 +153,9 @@ void nextLevel()
 
 }
 int t = 0;
+sf::Music Mvmusic;
+sf::Music Wmusic;
+sf::Music Lmusic;
 void setup()
 {
 	shape.setFillColor(sf::Color::White);
@@ -116,6 +165,26 @@ void setup()
 	
 	player.setScale(0.75,0.75);
 	princess.dX = -0.1;
+	
+	if (!Mvmusic.openFromFile("Flappy.ogg"))
+	{
+
+		cout << "error when load Flappy.ogg" << endl;
+		return; // error
+	}
+	if (!Wmusic.openFromFile("Win.ogg"))
+	{
+
+		cout << "error when load Win.ogg" << endl;
+		return; // error
+	}
+	if (!Lmusic.openFromFile("Lose.ogg"))
+	{
+
+		cout << "error when load Lose.ogg" << endl;
+		return; // error
+	}
+		
 	
 	
 	wallTexture.loadFromFile("wall.jpeg");
@@ -180,6 +249,8 @@ void update()
 			if (player.getGlobalBounds().intersects(monster_vec->at(i).getGlobalBounds())) {
 				if (t > 100) {
 					player.die();
+					Lmusic.stop();
+					Lmusic.play();
 					sf::sleep(sf::seconds(2));
 					nextLevel();
 					
@@ -192,13 +263,28 @@ void update()
 
 		if (player.getGlobalBounds().intersects(princess.getGlobalBounds()))
 		{
-			level++;
+			if (level < 5) {
+				level++;
+			}
+			else {
+				window.close();
+			}
+			Wmusic.stop();
+			Wmusic.play();
 			if (level == 1) {
 				Map = mapLevel1;
-				
 			}
 			if (level == 2) {
 				Map = mapLevel2;
+			}
+			if (level == 3) {
+				Map = mapLevel3;
+			}
+			if (level == 4) {
+				Map = mapLevel4;
+			}
+			if (level == 5) {
+				Map = mapLevel5;
 			}
 			player.setPosition(0, 0);
 			nextLevel();
@@ -238,6 +324,7 @@ void draw() {
 	
 }
 
+
 int main() {
 	// begin
 	
@@ -266,15 +353,19 @@ int main() {
 				window.close();
 			
 				if (event.type == sf::Event::KeyPressed) {
+					Mvmusic.stop();
+					Mvmusic.play();
 					if (event.key.code == sf::Keyboard::S)
 					{
 						//player.aX = 0.01;
 						player.aY = 0.01;
+					
 					}
 					if (event.key.code == sf::Keyboard::D)
 					{
 						player.aX = 0.01;
 						//player.aY = 0.01;
+
 					}
 					if (event.key.code == sf::Keyboard::A)
 					{
